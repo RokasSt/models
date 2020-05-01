@@ -195,6 +195,9 @@ message SsdFeatureExtractor {
   // The number of SSD layers.
   optional int32 num_layers = 12 [default = 6];
 
+  //custom feature extractor definition name
+  optional string custom_def = 13 [default = ""];
+
 }
 
 // Configuration for Feature Pyramid Networks.

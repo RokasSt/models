@@ -53,6 +53,12 @@ flags.DEFINE_boolean(
     'run_once', False, 'If running in eval-only mode, whether to run just '
     'one round of eval vs running continuously (default).'
 )
+flags.DEFINE_integer(
+    'log_step_count_steps',3,"frequency of reporting training loss in terms of training steps"
+)
+flags.DEFINE_integer(
+    'save_checkpoints_steps',100, "frequency of storing checkpoint in terms of training steps"
+)
 FLAGS = flags.FLAGS
 
 
@@ -60,7 +66,8 @@ def main(unused_argv):
   flags.mark_flag_as_required('model_dir')
   flags.mark_flag_as_required('pipeline_config_path')
   config = tf.estimator.RunConfig(model_dir=FLAGS.model_dir,
-                                  log_step_count_steps =2)
+                                  log_step_count_steps   = FLAGS.log_step_count_steps,
+                                  save_checkpoints_steps = FLAGS.save_checkpoints_steps)
 
   train_and_eval_dict = model_lib.create_estimator_and_inputs(
       run_config=config,
