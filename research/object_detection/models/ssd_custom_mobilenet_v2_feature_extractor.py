@@ -169,9 +169,54 @@ DEFAULT = dict(
     final_endpoint='layer_19',
     from_layer_names=['layer_15/expansion_output', 'layer_19', '', '', '', '']
 )
-# pyformat: enable
 
-CONV_DEFS = {"default": DEFAULT, "small_v1": SMALL_V1, "small_x_v1":SMALL_X_V1}
+SMALL_LK_V1 = dict(
+    defaults={
+        # Note: these parameters of batch norm affect the architecture
+        # that's why they are here and not in training_scope.
+        (slim.batch_norm,): {'center': True, 'scale': True},
+        (slim.conv2d, slim.fully_connected, slim.separable_conv2d): {
+            'normalizer_fn': slim.batch_norm, 'activation_fn': tf.nn.relu6
+        },
+        (conv_blocks.expanded_conv,): {
+            'expansion_size': expand_input(6),
+            'split_expansion': 1,
+            'normalizer_fn': slim.batch_norm,
+            'residual': True
+        },
+        (slim.conv2d, slim.separable_conv2d): {'padding': 'SAME'}
+    },
+    spec=[
+        op(slim.conv2d, stride=4, num_outputs=32, kernel_size=[7, 7]),
+        op(conv_blocks.expanded_conv,
+           expansion_size=expand_input(1, divisible_by=1),
+           num_outputs=16),
+        op(conv_blocks.expanded_conv, stride=4, num_outputs=24, kernel_size = [7, 7]),
+        op(conv_blocks.expanded_conv, stride=2, num_outputs=24),
+        op(conv_blocks.expanded_conv, stride=2, num_outputs=32),
+        op(conv_blocks.expanded_conv, stride=2, num_outputs=32),
+        #op(conv_blocks.expanded_conv, stride=1, num_outputs=32),
+        #op(conv_blocks.expanded_conv, stride=2, num_outputs=64),
+        #op(conv_blocks.expanded_conv, stride=1, num_outputs=64),
+        #op(conv_blocks.expanded_conv, stride=1, num_outputs=64),
+        #op(conv_blocks.expanded_conv, stride=1, num_outputs=64),
+        #op(conv_blocks.expanded_conv, stride=1, num_outputs=96),
+        #op(conv_blocks.expanded_conv, stride=1, num_outputs=96),
+        #op(conv_blocks.expanded_conv, stride=1, num_outputs=96),
+        #op(conv_blocks.expanded_conv, stride=2, num_outputs=160),
+        #op(conv_blocks.expanded_conv, stride=1, num_outputs=160),
+        #op(conv_blocks.expanded_conv, stride=1, num_outputs=160),
+        #op(conv_blocks.expanded_conv, stride=1, num_outputs=320),
+        #op(slim.conv2d, stride=1, kernel_size=[1, 1], num_outputs=1280)
+    ],
+    final_endpoint='layer_6',
+    from_layer_names=['layer_3/expansion_output', 'layer_6', '', '', '', '']
+)
+
+CONV_DEFS = {"default": DEFAULT, 
+             "small_v1": SMALL_V1, 
+             "small_x_v1":SMALL_X_V1,
+             "small_lk_v1":SMALL_LK_V1}
 
 class SSDCustomMobileNetV2FeatureExtractor(ssd_meta_arch.SSDFeatureExtractor):
   """SSD Feature Extractor using MobilenetV2 features."""
