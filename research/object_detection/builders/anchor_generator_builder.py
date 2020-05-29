@@ -53,6 +53,8 @@ def build(anchor_generator_config):
                        grid_anchor_generator_config.width_stride],
         anchor_offset=[grid_anchor_generator_config.height_offset,
                        grid_anchor_generator_config.width_offset])
+  elif anchor_generator_config.WhichOneof('anchor_generator_oneof') == "fixed_set_anchor_generator":
+    raise ValueError("FixedSetAnchorGenerator has not been implemented yet")
   elif anchor_generator_config.WhichOneof(
       'anchor_generator_oneof') == 'ssd_anchor_generator':
     ssd_anchor_generator_config = anchor_generator_config.ssd_anchor_generator
