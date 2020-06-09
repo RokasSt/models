@@ -19,6 +19,7 @@ from object_detection.anchor_generators import flexible_grid_anchor_generator
 from object_detection.anchor_generators import grid_anchor_generator
 from object_detection.anchor_generators import multiple_grid_anchor_generator
 from object_detection.anchor_generators import multiscale_grid_anchor_generator
+from object_detection.anchor_generators import fixed_set_anchor_generator
 from object_detection.protos import anchor_generator_pb2
 
 
@@ -54,7 +55,31 @@ def build(anchor_generator_config):
         anchor_offset=[grid_anchor_generator_config.height_offset,
                        grid_anchor_generator_config.width_offset])
   elif anchor_generator_config.WhichOneof('anchor_generator_oneof') == "fixed_set_anchor_generator":
-    raise ValueError("FixedSetAnchorGenerator has not been implemented yet")
+    ssd_anchor_generator_config = anchor_generator_config.fixed_set_anchor_generator
+    anchor_strides = None
+    if ssd_anchor_generator_config.height_stride:
+      anchor_strides = zip(ssd_anchor_generator_config.height_stride,
+                           ssd_anchor_generator_config.width_stride)
+    anchor_offsets = None
+    if ssd_anchor_generator_config.height_offset:
+      anchor_offsets = zip(ssd_anchor_generator_config.height_offset,
+                           ssd_anchor_generator_config.width_offset)
+    return fixed_set_anchor_generator.create_ssd_anchors(
+        num_layers=ssd_anchor_generator_config.num_layers,
+        min_scale=ssd_anchor_generator_config.min_scale,
+        max_scale=ssd_anchor_generator_config.max_scale,
+        scales=[float(scale) for scale in ssd_anchor_generator_config.scales],
+        aspect_ratios=ssd_anchor_generator_config.aspect_ratios,
+        interpolated_scale_aspect_ratio=(
+            ssd_anchor_generator_config.interpolated_scale_aspect_ratio),
+        base_anchor_size=[
+            ssd_anchor_generator_config.base_anchor_height,
+            ssd_anchor_generator_config.base_anchor_width
+        ],
+        anchor_strides=anchor_strides,
+        anchor_offsets=anchor_offsets,
+        reduce_boxes_in_lowest_layer=(
+            ssd_anchor_generator_config.reduce_boxes_in_lowest_layer))
   elif anchor_generator_config.WhichOneof(
       'anchor_generator_oneof') == 'ssd_anchor_generator':
     ssd_anchor_generator_config = anchor_generator_config.ssd_anchor_generator

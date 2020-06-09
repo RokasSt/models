@@ -10,6 +10,7 @@ message RegionSimilarityCalculator {
     IouSimilarity iou_similarity = 2;
     IoaSimilarity ioa_similarity = 3;
     ThresholdedIouSimilarity thresholded_iou_similarity = 4;
+    EmbeddedIouSimilarity embedded_iou_similarity = 5;
   }
 }
 
@@ -30,4 +31,8 @@ message ThresholdedIouSimilarity {
 
   // IOU threshold used for filtering scores.
   optional float iou_threshold = 1 [default = 0.5];
+}
+
+// Configuration for embedded intersection-over-union (IOU) similarity calculator.
+message EmbeddedIouSimilarity {
 }

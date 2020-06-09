@@ -603,11 +603,21 @@ class SSDMetaArch(model.DetectionModel):
         feature_maps)
     image_shape = shape_utils.combined_static_and_dynamic_shape(
         preprocessed_inputs)
-    boxlist_list = self._anchor_generator.generate(
+
+    if self._anchor_generator.__class__.__name__ == "FixedSetAnchorGenerator":
+      raise NotImplementedError("FixedSetAnchorGenerator has not been implemented yet")
+      boxlist_list = self._anchor_generator.generate(
         feature_map_spatial_dims,
+        groundtruth_lists = self.groundtruth_lists(fields.BoxListFields.boxes),
         im_height=image_shape[1],
         im_width=image_shape[2])
+    else:
+      boxlist_list = self._anchor_generator.generate(feature_map_spatial_dims,
+                                                     im_height=image_shape[1],
+                                                     im_width=image_shape[2])
+    
     self._anchors = box_list_ops.concatenate(boxlist_list)
+    
     if self._box_predictor.is_keras_model:
       predictor_results_dict = self._box_predictor(feature_maps)
     else:
@@ -882,6 +892,7 @@ class SSDMetaArch(model.DetectionModel):
            self.groundtruth_lists(fields.BoxListFields.boxes),
            self.groundtruth_lists(fields.BoxListFields.classes),
            keypoints, weights, confidences)
+
       match_list = [matcher.Match(match) for match in tf.unstack(batch_match)]
       if self._add_summaries:
         self._summarize_target_assignment(
@@ -1220,6 +1231,7 @@ class SSDMetaArch(model.DetectionModel):
       decoded_boxlist = box_list.BoxList(box_location)
       decoded_boxlist.add_field('scores', box_score)
       decoded_boxlist_list.append(decoded_boxlist)
+
     return self._hard_example_miner(
         location_losses=location_losses,
         cls_losses=cls_losses,
