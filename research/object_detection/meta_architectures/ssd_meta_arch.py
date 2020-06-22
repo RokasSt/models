@@ -605,7 +605,6 @@ class SSDMetaArch(model.DetectionModel):
         preprocessed_inputs)
 
     if self._anchor_generator.__class__.__name__ == "FixedSetAnchorGenerator":
-      raise NotImplementedError("FixedSetAnchorGenerator has not been implemented yet")
       boxlist_list = self._anchor_generator.generate(
         feature_map_spatial_dims,
         groundtruth_lists = self.groundtruth_lists(fields.BoxListFields.boxes),

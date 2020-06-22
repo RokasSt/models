@@ -104,11 +104,11 @@ SMALL_X_V1 = dict(
         op(conv_blocks.expanded_conv,
            expansion_size=expand_input(1, divisible_by=1),
            num_outputs=16),
-        op(conv_blocks.expanded_conv, stride=2, num_outputs=24),
+        op(conv_blocks.expanded_conv, stride=1, num_outputs=24),
         op(conv_blocks.expanded_conv, stride=1, num_outputs=24),
         op(conv_blocks.expanded_conv, stride=2, num_outputs=32),
         op(conv_blocks.expanded_conv, stride=1, num_outputs=32),
-        #op(conv_blocks.expanded_conv, stride=1, num_outputs=32),
+        op(conv_blocks.expanded_conv, stride=1, num_outputs=32),
         #op(conv_blocks.expanded_conv, stride=2, num_outputs=64),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=64),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=64),
@@ -122,8 +122,8 @@ SMALL_X_V1 = dict(
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=320),
         #op(slim.conv2d, stride=1, kernel_size=[1, 1], num_outputs=1280)
     ],
-    final_endpoint='layer_6',
-    from_layer_names=['layer_3/expansion_output', 'layer_6', '', '', '', '']
+    final_endpoint='layer_7',
+    from_layer_names=['layer_3/expansion_output', 'layer_7', '', '', '', '']
 )
 # pyformat: enable
 
@@ -192,7 +192,7 @@ SMALL_LK_V1 = dict(
            expansion_size=expand_input(1, divisible_by=1),
            num_outputs=16),
         op(conv_blocks.expanded_conv, stride=2, num_outputs=24, kernel_size = [3, 3]),
-        op(conv_blocks.expanded_conv, stride=4, num_outputs=24),
+        op(conv_blocks.expanded_conv, stride=1, num_outputs=24),
         op(conv_blocks.expanded_conv, stride=1, num_outputs=32),
         op(conv_blocks.expanded_conv, stride=1, num_outputs=32),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=32),

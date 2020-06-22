@@ -30,6 +30,7 @@ import tensorflow as tf
 from object_detection.anchor_generators import grid_anchor_generator
 from object_detection.core import anchor_generator
 from object_detection.core import box_list_ops
+from object_detection.core import box_list
 
 
 class FixedSetAnchorGenerator(anchor_generator.AnchorGenerator):
@@ -126,7 +127,11 @@ class FixedSetAnchorGenerator(anchor_generator.AnchorGenerator):
         raise ValueError('%s must be a list of pairs.' % arg_name)
 
   def name_scope(self):
-    return 'MultipleGridAnchorGenerator'
+    return 'FixedSetAnchorGenerator'
+
+  #@property
+  #def check_num_anchors(self):
+   # return False
 
   def num_anchors_per_location(self):
     """Returns the number of anchors per spatial location.
@@ -137,7 +142,31 @@ class FixedSetAnchorGenerator(anchor_generator.AnchorGenerator):
     """
     return [len(box_specs) for box_specs in self._box_specs]
 
-  def _generate(self, feature_map_shape_list, im_height=1, im_width=1):
+  def _assert_correct_number_of_anchors(self, anchors_list,
+                                        feature_map_shape_list):
+    """Assert that correct number of anchors was generated.
+
+    Args:
+      anchors_list: A list of box_list.BoxList object holding anchors generated.
+      feature_map_shape_list: list of (height, width) pairs in the format
+        [(height_0, width_0), (height_1, width_1), ...] that the generated
+        anchors must align with.
+    Returns:
+      Op that raises InvalidArgumentError if the number of anchors does not
+        match the number of expected anchors.
+    """
+    raise NotImplementedError
+    expected_num_anchors = 0
+    actual_num_anchors = 0
+    for num_anchors_per_location, feature_map_shape, anchors in zip(
+        self.num_anchors_per_location(), feature_map_shape_list, anchors_list):
+      expected_num_anchors += (num_anchors_per_location
+                               * feature_map_shape[0]
+                               * feature_map_shape[1])
+      actual_num_anchors += anchors.num_boxes()
+    return tf.assert_equal(expected_num_anchors, actual_num_anchors)
+
+  def _generate(self, feature_map_shape_list, groundtruth_lists, im_height=1, im_width=1):
     """Generates a collection of bounding boxes to be used as anchors.
 
     The number of anchors generated for a single grid with shape MxM where we
@@ -224,11 +253,16 @@ class FixedSetAnchorGenerator(anchor_generator.AnchorGenerator):
           scale_height * self._base_anchor_size[0],
           scale_width * self._base_anchor_size[1]
       ]
+    print("base anchor size")
+    print(base_anchor_size)
+    print("--------------")
+    print(self._base_anchor_size)
     for feature_map_index, (grid_size, scales, aspect_ratios, stride,
                             offset) in enumerate(
                                 zip(feature_map_shape_list, self._scales,
                                     self._aspect_ratios, anchor_strides,
                                     anchor_offsets)):
+      print(grid_size)
       tiled_anchors = grid_anchor_generator.tile_anchors(
           grid_height=grid_size[0],
           grid_width=grid_size[1],
@@ -243,10 +277,27 @@ class FixedSetAnchorGenerator(anchor_generator.AnchorGenerator):
       num_anchors_in_layer = tiled_anchors.num_boxes_static()
       if num_anchors_in_layer is None:
         num_anchors_in_layer = tiled_anchors.num_boxes()
+      fixed_set_size = len(groundtruth_lists)
       anchor_indices = feature_map_index * tf.ones([num_anchors_in_layer])
       tiled_anchors.add_field('feature_map_index', anchor_indices)
+      if feature_map_index == 0:
+        fixed_box_list = [
+        box_list.BoxList(groundtruth_lists[0])for ex_id in range(fixed_set_size)]
+        fixed_box_list = box_list_ops.concatenate(fixed_box_list)
+        anchor_indices = feature_map_index * tf.ones([fixed_set_size])
+        fixed_box_list.add_field('feature_map_index', anchor_indices)
+        tiled_anchors = box_list_ops.concatenate([tiled_anchors, fixed_box_list])
       anchor_grid_list.append(tiled_anchors)
-
+    
+    print(type(groundtruth_lists))
+    print(type(anchor_grid_list))
+    print(len(anchor_grid_list))
+    print(type(anchor_grid_list[0]))
+    print(type(box_list.BoxList(groundtruth_lists[0])))
+    print(groundtruth_lists[1].get_shape().as_list())
+    print(len(groundtruth_lists))
+    import sys
+    sys.exit(0)
     return anchor_grid_list
 
 

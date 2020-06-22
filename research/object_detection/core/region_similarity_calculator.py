@@ -164,7 +164,7 @@ class EmbeddedIouSimilarity(RegionSimilarityCalculator):
   This class computes pairwise similarity between two BoxLists based on IOU.
   """
 
-  def _compare(self, boxlist1, boxlist2):
+  def _compare(self, boxlist1, boxlist2, scope = None):
     """Compute pairwise IOU similarity between the two BoxLists.
 
     Args:
@@ -180,15 +180,14 @@ class EmbeddedIouSimilarity(RegionSimilarityCalculator):
       y_min2, x_min2, y_max2, x_max2 = tf.split(
         value=boxlist2.get(), num_or_size_splits=4, axis=1)
 
-      x_min_cond = tf.less_equal(x_min2, x_min1), 
-      x_max_cond = tf.greater_equal(x_max2, x_max1)
-      y_min_cond = tf.less_equal(y_min2, y_min1),
-      y_max_cond = tf.greater_equal(y_max2, y_max1)
+      x_min_cond = tf.less_equal(tf.transpose(x_min2), x_min1)
+      x_max_cond = tf.greater_equal(tf.transpose(x_max2), x_max1)
+      y_min_cond = tf.less_equal(tf.transpose(y_min2), y_min1)
+      y_max_cond = tf.greater_equal(tf.transpose(y_max2), y_max1)
 
       x_cond   = tf.logical_and(x_min_cond, x_max_cond)
       y_cond   = tf.logical_and(y_min_cond, y_max_cond)
       x_y_cond = tf.logical_and(x_cond, y_cond)
+      iou_op   = box_list_ops.iou(boxlist1, boxlist2)
 
-      return np.where(x_y_cond,
-                      box_list_ops.iou(boxlist1, boxlist2),
-                      tf.zeros_like(x_y_cond))
+      return tf.where(x_y_cond, iou_op, tf.zeros_like(iou_op))
