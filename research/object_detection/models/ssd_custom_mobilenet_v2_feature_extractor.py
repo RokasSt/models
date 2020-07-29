@@ -79,7 +79,8 @@ SMALL_V1 = dict(
         #op(slim.conv2d, stride=1, kernel_size=[1, 1], num_outputs=1280)
     ],
     final_endpoint='layer_9',
-    from_layer_names=['layer_5/expansion_output', 'layer_9', '', '', '', '']
+    from_layer_names=['layer_5/expansion_output', 'layer_9', '', '', '', ''],
+    layer_depth=[-1, -1, 512, 256, 256, 128]
 )
 # pyformat: enable
 
@@ -104,13 +105,13 @@ SMALL_X_V1 = dict(
         op(conv_blocks.expanded_conv,
            expansion_size=expand_input(1, divisible_by=1),
            num_outputs=16),
+        op(conv_blocks.expanded_conv, stride=2, num_outputs=24),
         op(conv_blocks.expanded_conv, stride=1, num_outputs=24),
-        op(conv_blocks.expanded_conv, stride=1, num_outputs=24),
-        op(conv_blocks.expanded_conv, stride=2, num_outputs=32),
         op(conv_blocks.expanded_conv, stride=1, num_outputs=32),
         op(conv_blocks.expanded_conv, stride=1, num_outputs=32),
-        #op(conv_blocks.expanded_conv, stride=2, num_outputs=64),
-        #op(conv_blocks.expanded_conv, stride=1, num_outputs=64),
+        op(conv_blocks.expanded_conv, stride=1, num_outputs=32),
+        op(conv_blocks.expanded_conv, stride=1, num_outputs=64),
+        op(conv_blocks.expanded_conv, stride=1, num_outputs=64),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=64),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=64),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=96),
@@ -122,8 +123,15 @@ SMALL_X_V1 = dict(
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=320),
         #op(slim.conv2d, stride=1, kernel_size=[1, 1], num_outputs=1280)
     ],
-    final_endpoint='layer_7',
-    from_layer_names=['layer_3/expansion_output', 'layer_7', '', '', '', '']
+    final_endpoint='layer_9',
+    from_layer_names=['layer_4/expansion_output', 
+                      'layer_6/expansion_output', 
+                      'layer_8/expansion_output',
+                      'layer_9', 
+                      '', 
+                      '', 
+                      ''],
+    layer_depth=[-1, -1, -1, -1, 128, 128, 128]
 )
 # pyformat: enable
 
@@ -167,7 +175,8 @@ DEFAULT = dict(
         op(slim.conv2d, stride=1, kernel_size=[1, 1], num_outputs=1280)
     ],
     final_endpoint='layer_19',
-    from_layer_names=['layer_15/expansion_output', 'layer_19', '', '', '', '']
+    from_layer_names=['layer_15/expansion_output', 'layer_19', '', '', '', ''],
+    layer_depth=[-1, -1, 512, 256, 256, 128]
 )
 
 SMALL_LK_V1 = dict(
@@ -196,21 +205,22 @@ SMALL_LK_V1 = dict(
         op(conv_blocks.expanded_conv, stride=1, num_outputs=32),
         op(conv_blocks.expanded_conv, stride=1, num_outputs=32),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=32),
-        #op(conv_blocks.expanded_conv, stride=2, num_outputs=64),
+        op(conv_blocks.expanded_conv, stride=2, num_outputs=64),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=64),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=64),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=64),
-        #op(conv_blocks.expanded_conv, stride=1, num_outputs=96),
+        op(conv_blocks.expanded_conv, stride=1, num_outputs=96),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=96),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=96),
         #op(conv_blocks.expanded_conv, stride=2, num_outputs=160),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=160),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=160),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=320),
-        #op(slim.conv2d, stride=1, kernel_size=[1, 1], num_outputs=1280)
+        op(slim.conv2d, stride=1, kernel_size=[1, 1], num_outputs=160)#320)#160)#1280)
     ],
-    final_endpoint='layer_6',
-    from_layer_names=['layer_3/expansion_output', 'layer_6', '', '', '', '']
+    final_endpoint='layer_9',
+    from_layer_names=['layer_9', '', '', '', '', ''],
+    layer_depth=[-1, -1, 512, 256, 256, 128]
 )
 
 CONV_DEFS = {"default": DEFAULT, 
@@ -301,7 +311,7 @@ class SSDCustomMobileNetV2FeatureExtractor(ssd_meta_arch.SSDFeatureExtractor):
 
     feature_map_layout = {
         'from_layer': CONV_DEFS[self._custom_def]["from_layer_names"][:self._num_layers],
-        'layer_depth': [-1, -1, 512, 256, 256, 128][:self._num_layers],
+        'layer_depth': CONV_DEFS[self._custom_def]["layer_depth"][:self._num_layers],
         'use_depthwise': self._use_depthwise,
         'use_explicit_padding': self._use_explicit_padding,
     }
@@ -337,5 +347,5 @@ class SSDCustomMobileNetV2FeatureExtractor(ssd_meta_arch.SSDFeatureExtractor):
               min_depth=self._min_depth,
               insert_1x1_conv=True,
               image_features=image_features)
-
+    
     return feature_maps.values()

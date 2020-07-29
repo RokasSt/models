@@ -241,39 +241,47 @@ def add_output_tensor_nodes(postprocessed_tensors,
       detection_fields.detection_features)
   raw_boxes = postprocessed_tensors.get(detection_fields.raw_detection_boxes)
   raw_scores = postprocessed_tensors.get(detection_fields.raw_detection_scores)
-  classes = postprocessed_tensors.get(
+  if postprocessed_tensors.get(detection_fields.detection_classes) is not None:
+    classes = postprocessed_tensors.get(
       detection_fields.detection_classes) + label_id_offset
+  else:
+    classes = None
   keypoints = postprocessed_tensors.get(detection_fields.detection_keypoints)
   masks = postprocessed_tensors.get(detection_fields.detection_masks)
   num_detections = postprocessed_tensors.get(detection_fields.num_detections)
   outputs = {}
-  outputs[detection_fields.detection_boxes] = tf.identity(
+  if boxes is not None:
+    outputs[detection_fields.detection_boxes] = tf.identity(
       boxes, name=detection_fields.detection_boxes)
-  outputs[detection_fields.detection_scores] = tf.identity(
+  if scores is not None:
+    outputs[detection_fields.detection_scores] = tf.identity(
       scores, name=detection_fields.detection_scores)
   if multiclass_scores is not None:
     outputs[detection_fields.detection_multiclass_scores] = tf.identity(
-        multiclass_scores, name=detection_fields.detection_multiclass_scores)
+      multiclass_scores, name=detection_fields.detection_multiclass_scores)
   if box_classifier_features is not None:
     outputs[detection_fields.detection_features] = tf.identity(
         box_classifier_features,
         name=detection_fields.detection_features)
-  outputs[detection_fields.detection_classes] = tf.identity(
+  if classes is not None:
+    outputs[detection_fields.detection_classes] = tf.identity(
       classes, name=detection_fields.detection_classes)
-  outputs[detection_fields.num_detections] = tf.identity(
+  if num_detections is not None:
+    outputs[detection_fields.num_detections] = tf.identity(
       num_detections, name=detection_fields.num_detections)
   if raw_boxes is not None:
     outputs[detection_fields.raw_detection_boxes] = tf.identity(
-        raw_boxes, name=detection_fields.raw_detection_boxes)
+      raw_boxes, name=detection_fields.raw_detection_boxes)
   if raw_scores is not None:
     outputs[detection_fields.raw_detection_scores] = tf.identity(
-        raw_scores, name=detection_fields.raw_detection_scores)
+      raw_scores, name=detection_fields.raw_detection_scores)
   if keypoints is not None:
     outputs[detection_fields.detection_keypoints] = tf.identity(
-        keypoints, name=detection_fields.detection_keypoints)
+      keypoints, name=detection_fields.detection_keypoints)
   if masks is not None:
     outputs[detection_fields.detection_masks] = tf.identity(
-        masks, name=detection_fields.detection_masks)
+      masks, name=detection_fields.detection_masks)
+
   for output_key in outputs:
     tf.add_to_collection(output_collection_name, outputs[output_key])
 
@@ -473,7 +481,8 @@ def export_inference_graph(input_type,
                            input_shape=None,
                            output_collection_name='inference_op',
                            additional_output_tensor_names=None,
-                           write_inference_graph=False):
+                           write_inference_graph=False,
+                           model_build_fn = None):
   """Exports inference graph for the model specified in the pipeline config.
 
   Args:
@@ -490,8 +499,12 @@ def export_inference_graph(input_type,
       tensors to include in the frozen graph.
     write_inference_graph: If true, writes inference graph to disk.
   """
-  detection_model = model_builder.build(pipeline_config.model,
-                                        is_training=False)
+  if model_build_fn:
+    detection_model = model_build_fn(pipeline_config.model, 
+                                     is_training=False)
+  else:
+    detection_model = model_builder.build(pipeline_config.model,
+                                          is_training=False)
   graph_rewriter_fn = None
   if pipeline_config.HasField('graph_rewriter'):
     graph_rewriter_config = pipeline_config.graph_rewriter

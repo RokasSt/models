@@ -50,6 +50,8 @@ def get_image_resizer_config(model_config):
     return model_config.faster_rcnn.image_resizer
   if meta_architecture == "ssd":
     return model_config.ssd.image_resizer
+  if meta_architecture == "localization_model":
+    return model_config.localization_model.image_resizer
 
   raise ValueError("Unknown model type: {}".format(meta_architecture))
 
@@ -267,6 +269,8 @@ def get_number_of_classes(model_config):
     return model_config.faster_rcnn.num_classes
   if meta_architecture == "ssd":
     return model_config.ssd.num_classes
+  if meta_architecture == "localization_model":
+    return model_config.localization_model.num_classes
 
   raise ValueError("Expected the model to be one of 'faster_rcnn' or 'ssd'.")
 
@@ -802,7 +806,10 @@ def _update_classification_localization_weight_ratio(configs, ratio):
     model = configs["model"].ssd
     model.loss.localization_weight = 1.0
     model.loss.classification_weight = ratio
-
+  if meta_architecture == "localization_model":
+    model = configs["model"].localization_model
+    model.loss.localization_weight = 1.0
+    model.loss.classification_weight = ratio
 
 def _get_classification_loss(model_config):
   """Returns the classification loss for a model."""
