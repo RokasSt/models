@@ -115,23 +115,22 @@ SMALL_X_V1 = dict(
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=64),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=64),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=96),
-        #op(conv_blocks.expanded_conv, stride=1, num_outputs=96),
+        op(conv_blocks.expanded_conv, stride=1, num_outputs=96),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=96),
         #op(conv_blocks.expanded_conv, stride=2, num_outputs=160),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=160),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=160),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=320),
-        op(slim.conv2d, stride=1, kernel_size=[1, 1], num_outputs=1280)
+        op(slim.conv2d, stride=1, kernel_size=[1, 1], num_outputs= 1280)
     ],
-    final_endpoint='layer_9',
-    from_layer_names=['layer_4/expansion_output', 
-                      'layer_6/expansion_output', 
+    final_endpoint='layer_10',
+    from_layer_names=['layer_6/expansion_output', 
                       'layer_8/expansion_output',
-                      'layer_9', 
+                      'layer_10', 
                       '', 
                       '', 
                       ''],
-    layer_depth=[-1, -1, -1, -1, 128, 128, 128]
+    layer_depth=[-1, -1, -1, 128, 128, 128]
 )
 # pyformat: enable
 
