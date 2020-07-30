@@ -108,7 +108,7 @@ SMALL_X_V1 = dict(
         op(conv_blocks.expanded_conv, stride=2, num_outputs=24),
         op(conv_blocks.expanded_conv, stride=1, num_outputs=24),
         op(conv_blocks.expanded_conv, stride=1, num_outputs=32),
-        op(conv_blocks.expanded_conv, stride=1, num_outputs=32),
+        op(conv_blocks.expanded_conv, stride=2, num_outputs=32),
         op(conv_blocks.expanded_conv, stride=1, num_outputs=32),
         op(conv_blocks.expanded_conv, stride=1, num_outputs=64),
         #op(conv_blocks.expanded_conv, stride=1, num_outputs=64),
