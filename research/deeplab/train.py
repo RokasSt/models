@@ -374,11 +374,11 @@ def main(unused_argv):
           decay_steps=FLAGS.decay_steps,
           end_learning_rate=FLAGS.end_learning_rate)
 
-      summaries.add(tf.summary.scalar('learning_rate', learning_rate))
-
       if FLAGS.optimizer == 'momentum':
+        summaries.add(tf.summary.scalar('learning_rate', learning_rate))
         optimizer = tf.train.MomentumOptimizer(learning_rate, FLAGS.momentum)
       elif FLAGS.optimizer == 'adam':
+        summaries.add(tf.summary.scalar('learning_rate', FLAGS.adam_learning_rate))
         optimizer = tf.train.AdamOptimizer(
             learning_rate=FLAGS.adam_learning_rate, epsilon=FLAGS.adam_epsilon)
       else:
