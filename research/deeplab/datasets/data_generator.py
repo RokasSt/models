@@ -105,7 +105,7 @@ _DROPLET_V0_INFORMATION = DatasetDescriptor(
         'val': 405,
     },
     num_classes=2,
-    ignore_label=0,
+    ignore_label=255,
 )
 
 _DATASETS_INFORMATION = {
