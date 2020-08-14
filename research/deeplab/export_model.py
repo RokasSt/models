@@ -36,8 +36,8 @@ flags.DEFINE_string('export_path', None,
 
 flags.DEFINE_integer('num_classes', 21, 'Number of classes.')
 
-flags.DEFINE_multi_integer('crop_size', [513, 513],
-                           'Crop size [height, width].')
+flags.DEFINE_integer('crop_height', 513, 'crop size height.')
+flags.DEFINE_integer('crop_width',  513, 'crop size width.')
 
 # For `xception_65`, use atrous_rates = [12, 24, 36] if output_stride = 8, or
 # rates = [6, 12, 18] if output_stride = 16. For `mobilenet_v2`, use None. Note
@@ -97,8 +97,8 @@ def _create_input_tensors():
   resized_image, image, _ = input_preprocess.preprocess_image_and_label(
       image,
       label=None,
-      crop_height=FLAGS.crop_size[0],
-      crop_width=FLAGS.crop_size[1],
+      crop_height=FLAGS.crop_height,
+      crop_width=FLAGS.crop_width,
       min_resize_value=FLAGS.min_resize_value,
       max_resize_value=FLAGS.max_resize_value,
       resize_factor=FLAGS.resize_factor,
@@ -122,7 +122,7 @@ def main(unused_argv):
 
     model_options = common.ModelOptions(
         outputs_to_num_classes={common.OUTPUT_TYPE: FLAGS.num_classes},
-        crop_size=FLAGS.crop_size,
+        crop_size=[FLAGS.crop_height, FLAGS.crop_width],
         atrous_rates=FLAGS.atrous_rates,
         output_stride=FLAGS.output_stride)
 

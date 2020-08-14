@@ -28,6 +28,14 @@ from tensorflow.contrib import training as contrib_training
 from deeplab import common
 from deeplab import model
 from deeplab.datasets import data_generator
+from tensorflow.python.training import evaluation
+from tensorflow.python.ops import state_ops
+from tensorflow.python.training import basic_session_run_hooks
+from tensorflow.python.training import monitored_session
+from tensorflow.python.platform import tf_logging as logging
+import time
+get_or_create_eval_step = evaluation._get_or_create_eval_step
+StopAfterNEvalsHook = evaluation._StopAfterNEvalsHook
 
 flags = tf.app.flags
 FLAGS = flags.FLAGS
@@ -86,6 +94,79 @@ flags.DEFINE_integer('max_number_of_evaluations', 0,
                      'Maximum number of eval iterations. Will loop '
                      'indefinitely upon nonpositive values.')
 
+def evaluate(checkpoint_path,
+            master='',
+            scaffold=None,
+            eval_ops=None,
+            feed_dict=None,
+            final_ops=None,
+            final_ops_feed_dict=None,
+            hooks=None,
+            config=None):
+  """reduced/customized version of original contrib_training.evaluate_repeatedly()
+  Args:
+    checkpoint_path: complete checkpoint path for the trained model.
+    master: The address of the TensorFlow master.
+    scaffold: An tf.train.Scaffold instance for initializing variables and
+      restoring variables. Note that `scaffold.init_fn` is used by the function
+      to restore the checkpoint. If you supply a custom init_fn, then it must
+      also take care of restoring the model from its checkpoint.
+    eval_ops: A single `Tensor`, a list of `Tensors` or a dictionary of names
+      to `Tensors`, which is run until the session is requested to stop,
+      commonly done by a `tf.contrib.training.StopAfterNEvalsHook`.
+    feed_dict: The feed dictionary to use when executing the `eval_ops`.
+    final_ops: A single `Tensor`, a list of `Tensors` or a dictionary of names
+      to `Tensors`.
+    final_ops_feed_dict: A feed dictionary to use when evaluating `final_ops`.
+    eval_interval_secs: The minimum number of seconds between evaluations.
+    hooks: List of `tf.train.SessionRunHook` callbacks which are run inside the
+      evaluation loop.
+    config: An instance of `tf.ConfigProto` that will be used to
+      configure the `Session`. If left as `None`, the default will be used.
+  Returns:
+    The fetched values of `final_ops` or `None` if `final_ops` is `None`.
+  """
+  eval_step = get_or_create_eval_step()
+
+  # Prepare the run hooks.
+  hooks = hooks or []
+
+  if eval_ops is not None:
+    update_eval_step = state_ops.assign_add(eval_step, 1)
+
+    for h in hooks:
+      if isinstance(h, StopAfterNEvalsHook):
+        h._set_evals_completed_tensor(update_eval_step)  # pylint: disable=protected-access
+
+    if isinstance(eval_ops, dict):
+      eval_ops['update_eval_step'] = update_eval_step
+    elif isinstance(eval_ops, (tuple, list)):
+      eval_ops = list(eval_ops) + [update_eval_step]
+    else:
+      eval_ops = [eval_ops, update_eval_step]
+
+  final_ops_hook = basic_session_run_hooks.FinalOpsHook(final_ops,
+                                                        final_ops_feed_dict)
+  hooks.append(final_ops_hook)
+  
+  session_creator = monitored_session.ChiefSessionCreator(
+    scaffold=scaffold,
+    checkpoint_filename_with_path=checkpoint_path,
+    master=master,
+    config=config)
+
+  with monitored_session.MonitoredSession(
+    session_creator=session_creator, hooks=hooks) as session:
+    logging.info('Starting evaluation at ' + time.strftime(
+      '%Y-%m-%d-%H:%M:%S', time.gmtime()))
+    if eval_ops is not None:
+      while not session.should_stop():
+        session.run(eval_ops, feed_dict)
+
+    logging.info('Finished evaluation at ' + time.strftime(
+      '%Y-%m-%d-%H:%M:%S', time.gmtime()))
+
+  return final_ops_hook.final_ops_values
 
 def main(unused_argv):
   tf.logging.set_verbosity(tf.logging.INFO)
@@ -211,7 +292,15 @@ def main(unused_argv):
     contrib_tfprof.model_analyzer.print_model_analysis(
         tf.get_default_graph(),
         tfprof_options=contrib_tfprof.model_analyzer.FLOAT_OPS_OPTIONS)
-    contrib_training.evaluate_repeatedly(
+
+    if "model.ckpt-" in FLAGS.checkpoint_dir:
+      evaluate(
+        checkpoint_path = FLAGS.checkpoint_dir,
+        master=FLAGS.master,
+        eval_ops=list(metrics_to_updates.values()),
+        hooks=hooks)
+    else:
+      contrib_training.evaluate_repeatedly(
         checkpoint_dir=FLAGS.checkpoint_dir,
         master=FLAGS.master,
         eval_ops=list(metrics_to_updates.values()),
