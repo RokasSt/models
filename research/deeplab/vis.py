@@ -280,8 +280,12 @@ def main(unused_argv):
     num_iteration = 0
     max_num_iteration = FLAGS.max_number_of_iterations
 
-    checkpoints_iterator = contrib_training.checkpoints_iterator(
+    if "model.ckpt-" in FLAGS.checkpoint_dir:
+      checkpoints_iterator = [FLAGS.checkpoint_dir]
+    else:
+      checkpoints_iterator = contrib_training.checkpoints_iterator(
         FLAGS.checkpoint_dir, min_interval_secs=FLAGS.eval_interval_secs)
+    
     for checkpoint_path in checkpoints_iterator:
       num_iteration += 1
       tf.logging.info(
