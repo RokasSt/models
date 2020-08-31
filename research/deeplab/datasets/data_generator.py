@@ -101,8 +101,8 @@ _ADE20K_INFORMATION = DatasetDescriptor(
 
 _DROPLET_V0_INFORMATION = DatasetDescriptor(
     splits_to_sizes={
-        'train': 943,
-        'val': 405,
+        'train': 943*2,
+        'val': 405*2,
     },
     num_classes=2,
     ignore_label=255,
