@@ -39,6 +39,7 @@ FLAGS = flags.FLAGS
 
 flags.DEFINE_string('master', '', 'BNS name of the tensorflow server')
 
+
 # Settings for log directories.
 
 flags.DEFINE_string('vis_logdir', None, 'Where to write the event logs.')
