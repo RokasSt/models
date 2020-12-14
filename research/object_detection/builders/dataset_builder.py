@@ -23,10 +23,12 @@ that wraps the build function.
 """
 import functools
 import tensorflow as tf
+import numpy as np
+from datetime import datetime
+import re
 
 from object_detection.data_decoders import tf_example_decoder
 from object_detection.protos import input_reader_pb2
-
 
 def make_initializable_iterator(dataset):
   """Creates an iterator, and initializes tables.
@@ -70,24 +72,78 @@ def read_dataset(file_read_func, input_files, config):
     num_readers = len(filenames)
     tf.logging.warning('num_readers has been reduced to %d to match input file '
                        'shards.' % num_readers)
-  filename_dataset = tf.data.Dataset.from_tensor_slices(filenames)
-  if config.shuffle:
-    filename_dataset = filename_dataset.shuffle(
-        config.filenames_shuffle_buffer_size)
-  elif num_readers > 1:
-    tf.logging.warning('`shuffle` is false, but the input data stream is '
-                       'still slightly shuffled since `num_readers` > 1.')
-  filename_dataset = filename_dataset.repeat(config.num_epochs or None)
-  records_dataset = filename_dataset.apply(
-      tf.contrib.data.parallel_interleave(
-          file_read_func,
-          cycle_length=num_readers,
-          block_length=config.read_block_length,
-          sloppy=config.shuffle))
-  if config.shuffle:
-    records_dataset = records_dataset.shuffle(config.shuffle_buffer_size)
-  return records_dataset
 
+  def read_fn(input_filenames):
+    """restructured local reading function for specific set of 
+    input filenames""" 
+    filename_dataset = tf.data.Dataset.from_tensor_slices(input_filenames)
+    if config.shuffle:
+      filename_dataset = filename_dataset.shuffle(
+        config.filenames_shuffle_buffer_size)
+    elif num_readers > 1:
+      tf.logging.warning('`shuffle` is false, but the input data stream is '
+                         'still slightly shuffled since `num_readers` > 1.')
+    filename_dataset = filename_dataset.repeat(config.num_epochs or None)
+    records_dataset = filename_dataset.apply(
+      tf.contrib.data.parallel_interleave(
+        file_read_func,
+        cycle_length=num_readers,
+        block_length=config.read_block_length,
+        sloppy=config.shuffle))
+    return records_dataset
+
+  num_filenames=len(filenames)
+  sample_factor=config.recency_sample_factor
+
+  def compute_recency_weights():
+    normalizer=0
+    for i in range(num_filenames):
+      normalizer+=np.power(sample_factor, i)
+    a0=1.0/normalizer
+    return [np.power(
+      sample_factor, i)*a0 for i in range(num_filenames)]
+    
+  if num_filenames>1 and sample_factor > 1.0:
+    pattern=re.compile("[0-9]{8}")
+    records_dataset_list=num_filenames*[None]
+    has_timestamp=num_filenames*[False]
+    time_string_list=[]
+    
+    for i in range(num_filenames):
+      search_result=pattern.search(filenames[i])
+      if search_result:
+        has_timestamp[i]=True
+        time_string_list.append(search_result.group(0)[0:])
+    time_string_list.sort(
+      key=lambda date: datetime.strptime(date, "%Y%m%d"))
+    
+    timestamped_input_filenames=[]
+    input_filenames=[]
+    timed_counter=0
+    for i in range(num_filenames):
+      if has_timestamp[i]:
+        time_string=time_string_list[timed_counter]
+        input_filename=re.sub(
+          pattern, "%s"%time_string, filenames[i])
+        timed_counter+=1
+        timestamped_input_filenames.append(input_filename)
+      else:
+        input_filenames.append(filenames[i])
+    input_filenames.extend(timestamped_input_filenames)
+    
+    for i, inp_filename in enumerate(input_filenames):
+      records_dataset_list[i]=read_fn([inp_filename])
+    weights=compute_recency_weights()
+    
+    records_dataset=tf.data.experimental.sample_from_datasets(
+      records_dataset_list, weights=weights)
+  else:
+    records_dataset=read_fn(filenames)
+  
+  if config.shuffle:
+    records_dataset=records_dataset.shuffle(config.shuffle_buffer_size)
+  
+  return records_dataset
 
 def build(input_reader_config, batch_size=None, transform_input_data_fn=None):
   """Builds a tf.data.Dataset.

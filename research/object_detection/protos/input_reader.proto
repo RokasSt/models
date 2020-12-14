@@ -97,6 +97,10 @@ message InputReader {
   // Whether to load multiclass scores from the dataset.
   optional bool load_multiclass_scores = 24 [default = false];
 
+  // Hyperparameter to control weighting of multiple tfrecord components
+  // in order to use with tf.data.experimental.sample_from_datasets:
+  optional float recency_sample_factor = 25 [default=1.0];
+
   // Whether to load groundtruth instance masks.
   optional bool load_instance_masks = 7 [default = false];
 
