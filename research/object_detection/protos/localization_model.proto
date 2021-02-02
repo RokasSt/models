@@ -87,5 +87,7 @@ message LocalizationModel {
   optional float height_scale = 21 [default = 1000.0];
   optional float width_scale = 22 [default = 1000.0];
   optional float scale_factor= 23 [default = 1000.0];
+
+  optional bool ignore_weights= 25[default=false];
 }
 
