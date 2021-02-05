@@ -88,6 +88,8 @@ message LocalizationModel {
   optional float width_scale = 22 [default = 1000.0];
   optional float scale_factor= 23 [default = 1000.0];
 
-  optional bool ignore_weights= 25[default=false];
+  optional bool ignore_class_weights= 25[default=false];
+  optional bool tie_class_and_reg_weights = 26 [default=true];
+  optional int32 num_hidden_dim = 27 [default=128];
 }
 
