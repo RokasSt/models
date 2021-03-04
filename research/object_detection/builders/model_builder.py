@@ -63,8 +63,6 @@ from object_detection.predictors.heads import mask_head
 from object_detection.protos import model_pb2
 from object_detection.utils import ops
 
-from object_detection.models.ssd_custom_mobilenet_v2_feature_extractor import SSDCustomMobileNetV2FeatureExtractor
-
 # A map of names to SSD feature extractors.
 SSD_FEATURE_EXTRACTOR_CLASS_MAP = {
     'ssd_inception_v2': SSDInceptionV2FeatureExtractor,
@@ -73,7 +71,6 @@ SSD_FEATURE_EXTRACTOR_CLASS_MAP = {
     'ssd_mobilenet_v1_fpn': SSDMobileNetV1FpnFeatureExtractor,
     'ssd_mobilenet_v1_ppn': SSDMobileNetV1PpnFeatureExtractor,
     'ssd_mobilenet_v2': SSDMobileNetV2FeatureExtractor,
-    'ssd_custom_mobilenet_v2':SSDCustomMobileNetV2FeatureExtractor,
     'ssd_mobilenet_v2_fpn': SSDMobileNetV2FpnFeatureExtractor,
     'ssd_mobilenet_v3_large': SSDMobileNetV3LargeFeatureExtractor,
     'ssd_mobilenet_v3_small': SSDMobileNetV3SmallFeatureExtractor,
@@ -223,9 +220,6 @@ def _build_ssd_feature_extractor(feature_extractor_config,
         'additional_layer_depth':
             feature_extractor_config.fpn.additional_layer_depth,
     })
-
-  if feature_extractor_config.custom_def != "":
-    kwargs.update({"custom_conv_def":feature_extractor_config.custom_def})
   
   return feature_extractor_class(**kwargs)
 

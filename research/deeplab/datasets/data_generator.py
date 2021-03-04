@@ -101,9 +101,9 @@ _ADE20K_INFORMATION = DatasetDescriptor(
 
 _DROPLET_V0_INFORMATION = DatasetDescriptor(
     splits_to_sizes={
-        'train': 1888+32,
-        'val': 810+14,
-    },
+        'train': None,
+        'val': None,
+    }, # exact split field values are not really used (see code below)
     num_classes=2,
     ignore_label=255,
 )

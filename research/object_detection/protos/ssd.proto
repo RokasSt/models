@@ -197,6 +197,7 @@ message SsdFeatureExtractor {
 
   //custom feature extractor definition name
   optional string custom_def = 13 [default = ""];
+  optional bool combine_predictor_features = 14 [default=false];
 
 }
 
