@@ -101,6 +101,9 @@ message InputReader {
   // in order to use with tf.data.experimental.sample_from_datasets:
   optional float recency_sample_factor = 25 [default=1.0];
 
+  //number of parallel data partitions to feed to the object detection model
+  optional uint32 num_data_partitions = 26 [default=1];
+
   // Whether to load groundtruth instance masks.
   optional bool load_instance_masks = 7 [default = false];
 
