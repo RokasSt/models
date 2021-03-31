@@ -91,5 +91,7 @@ message LocalizationModel {
   optional bool ignore_class_weights= 25[default=false];
   optional bool tie_class_and_reg_weights = 26 [default=true];
   optional int32 num_hidden_dim = 27 [default=128];
+
+  optional bool location_wise_predictions= 28 [default=true];
 }
 
