@@ -92,9 +92,12 @@ message LocalizationModel {
   optional bool tie_class_and_reg_weights = 26 [default=true];
   optional int32 num_hidden_dim = 27 [default=0];
 
-  optional bool location_wise_predictions= 28 [default=true];
+  optional bool location_wise_predictions= 28 [default=false];
   optional bool use_conv_prediction_head = 29 [default=false];
   optional bool use_depthwise_conv_head = 30 [default=false];
   optional int32 conv_head_kernel_size = 31 [default=1];
+
+  optional float neg_to_positive_ratio = 32 [default=-1.0];
+  optional int32 max_negative_bboxes = 33 [default=100];
 }
 
