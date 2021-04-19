@@ -99,5 +99,7 @@ message LocalizationModel {
 
   optional float neg_to_positive_ratio = 32 [default=-1.0];
   optional int32 max_negative_bboxes = 33 [default=100];
+
+  optional bool ignore_negative_bboxes = 34 [default=false];
 }
 
