@@ -103,5 +103,9 @@ message LocalizationModel {
   optional bool ignore_negative_bboxes = 34 [default=false];
 
   optional int32 num_layers_before_predictor = 35 [default=0];
+
+  optional int32 max_num_bboxes = 36 [default=0];
+
+  optional bool exclude_classes_from_hard_negative_mining = 37 [default=false];
 }
 
