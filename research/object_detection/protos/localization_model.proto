@@ -98,7 +98,7 @@ message LocalizationModel {
   optional int32 conv_head_kernel_size = 31 [default=1];
 
   optional float neg_to_positive_ratio = 32 [default=-1.0];
-  optional int32 max_negative_bboxes = 33 [default=100];
+  optional int32 min_num_negatives_per_image = 33 [default=100];
 
   optional bool ignore_negative_bboxes = 34 [default=false];
 
