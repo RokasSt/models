@@ -107,5 +107,7 @@ message LocalizationModel {
   optional int32 max_num_bboxes = 36 [default=0];
 
   optional bool exclude_classes_from_hard_negative_mining = 37 [default=false];
+
+  optional string hard_negative_mining_loss_metric = 38 [default="classification_and_localization"];
 }
 
