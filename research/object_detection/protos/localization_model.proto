@@ -111,5 +111,7 @@ message LocalizationModel {
   optional string hard_negative_mining_loss_metric = 38 [default="classification_and_localization"];
 
   optional bool require_flatten_features = 39 [default=false];
+
+  repeated string output_feature_shapes = 40 ;
 }
 
