@@ -113,5 +113,7 @@ message LocalizationModel {
   optional bool require_flatten_features = 39 [default=false];
 
   repeated string output_feature_shapes = 40 ;
+
+  repeated int32 pooling_layer_dims = 41;
 }
 
