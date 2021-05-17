@@ -108,11 +108,21 @@ _DROPLET_V0_INFORMATION = DatasetDescriptor(
     ignore_label=255,
 )
 
+_DROPLET_V0_INFORMATION = DatasetDescriptor(
+    splits_to_sizes={
+        'train': None,
+        'val': None,
+    }, # exact split field values are not really used (see code below)
+    num_classes=3,
+    ignore_label=255,
+)
+
 _DATASETS_INFORMATION = {
     'cityscapes': _CITYSCAPES_INFORMATION,
     'pascal_voc_seg': _PASCAL_VOC_SEG_INFORMATION,
     'ade20k': _ADE20K_INFORMATION,
     'droplet_v0':_DROPLET_V0_INFORMATION,
+    'droplet_v1':_DROPLET_V1_INFORMATION
 }
 
 # Default file pattern of TFRecord of TensorFlow Example.
