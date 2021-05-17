@@ -108,7 +108,7 @@ _DROPLET_V0_INFORMATION = DatasetDescriptor(
     ignore_label=255,
 )
 
-_DROPLET_V0_INFORMATION = DatasetDescriptor(
+_DROPLET_V1_INFORMATION = DatasetDescriptor(
     splits_to_sizes={
         'train': None,
         'val': None,
