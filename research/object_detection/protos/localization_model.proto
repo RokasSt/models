@@ -117,5 +117,7 @@ message LocalizationModel {
   repeated int32 pooling_layer_dims = 41;
 
   repeated int32 pooling_atrous_rates = 42;
+
+  optional bool average_pool_lower_layers = 43 [default=true];
 }
 
