@@ -115,5 +115,7 @@ message LocalizationModel {
   repeated string output_feature_shapes = 40 ;
 
   repeated int32 pooling_layer_dims = 41;
+
+  repeated int32 pooling_atrous_rates = 42;
 }
 
